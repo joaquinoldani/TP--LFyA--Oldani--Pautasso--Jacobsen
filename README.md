@@ -9,7 +9,8 @@ Before run the code you need to run `pip install -r requirements.txt` in the ter
 Use `python3 grupo04.py <query>`
 
 ## Status
-Lex checker ok !!!!
+Lex checker 🆗 
+Grammar check 👷🏻‍♂️⚠️
 Sintax checker - WIP
 
 
