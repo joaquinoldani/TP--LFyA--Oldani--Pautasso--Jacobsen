@@ -6,6 +6,10 @@ try:
 except ImportError:
     raise ImportError('Please, add ply library to the root of the proyect or run pip install -r requirements.txt')
 
+# Initialization
+columns = {}
+tables = {}
+
 reserved = {
     'AND': 'AND',
     'AS': 'AS',
@@ -44,7 +48,8 @@ tokens = list(reserved.values()) + [
     'COMMA',
     'DOT',
     'STRING',
-    'NUMBER'
+    'NUMBER',
+    'QUOTE'
 ]
 
 # Regular expressions for special tokens.
@@ -60,6 +65,7 @@ t_LEFT_BRACKET = r'\['
 t_RIGHT_BRACKET = r'\]'
 t_COMMA = r'\,'
 t_DOT = r'\.'
+t_QUOTE = r'\''
 
 ## Token could be a string, a number or a new line and a string-token can't start with number in SQL and in the most common languages.
 
@@ -135,4 +141,39 @@ while True:
     if not s:
         continue
     parser.parse(s)
+
+
+def p_QUERY_axioma(p):
+    '''QUERY : SELECT_NT FROM_NT JOIN_NT WHERE_NT ORDERBY_NT'''
+
+def p_SELECT_(p):
+    '''SELECT_NT : SELECT DISTINCT COLUMNS
+                 | SELECT COLUMNS'''
+
+def p_COLUMNS(p):
+    '''COLUMNS : COLUMN COMMA COLUMNS
+               | COLUMN''' 
+
+def p_ALIAS(p):
+    '''ALIAS : AS QUOTE STRING QUOTE'''
+
+def p_COLUMN(p):
+    '''COLUMN : STRING DOT STRING
+              | STRING DOT STRING ALIAS
+              | FUNCTION ALIAS'''
+    print(p)
+
+def P_COLUMN_WIHTOUT_ALIAS(p):
+    '''COLUMN_WIHTOUT_ALIAS : STRING DOT STRING
+                            | STRING
+                            | DISTINCT STRING'''
+
+def p_FUNCTION_(p):
+    '''FUNCTION : VALID_FUNCTIONS LEFT_PARENTHESIS COLUMN_WIHTOUT_ALIAS RIGHT_PARENTHESIS
+                | VALID_FUNCTIONS LEFT_PARENTHESIS COLUMN_WIHTOUT_ALIAS RIGHT_PARENTHESIS'''
+
+def p_VALID_FUNCTIONS(p):
+    '''VALID_FUNCTIONS : COUNT
+                       | MAX
+                       | MIN'''
 
