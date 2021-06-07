@@ -9,7 +9,7 @@ Before run the code you need to run `pip install -r requirements.txt` in the ter
                     
                     
 ## Run
-Use `python3 grupo04.py <query>`
+Use `$ python3 grupo04.py <query>`
 
                     
 
