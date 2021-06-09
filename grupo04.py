@@ -97,29 +97,9 @@ def t_error(t):
     print("Lex error. Character '%s' is not valid" % t.value[0])
     t.lexer.skip(1)
 
-query = """SELECT p.Nombre,
-	p.Apellido,
-	p.Email,
-	s.CodigoSocio,
-	a.CodigoAlquiler,
-	j.Nombre AS 'Nombre Juego',
-	a.FechaRetiro,
-	a.FechaDevolucion,
-	a.CostoPorDia, 
-	ac.Costo, 
-	ac.EstadoPago, 
-	ac.FechaPago,
-	s.Saldo AS 'deuda Total'
-	FROM AlquileresCosto ac, AlquileresCostsso AS ac, dbo.Alquileres a, dbo.Socios s, dbo.Personas p, dbo.Juegos j
-	INNER JOIN PersonasNuevas pn ON pn.dni = ac.dni
-    INNER JOIN personasViejas pn ON pv.dni = ac.dni
-    INNER JOIN PersonasMedias pn ON pm.dni = ac.dni
-    WHERE a.CodigoSocio = s.CodigoSocio
-	AND s.CodigoPersona = p.CodigoPersona
-	AND a.CodigoAlquiler = ac.CodigoAlquiler
-	AND j.CodigoJuego = a.CodigoJuego
-    GROUP BY p.apellido
-    ORDER BY p.Apellido DESC"""
+query = """SELECT c.first_name,
+	c.last_name
+	FROM customers AS c"""
 
 # Check if the tokens are valid.
 lexer = lex.lex()
@@ -199,7 +179,8 @@ def p_TABLE(p):
         print('TABLA ' + p[1])
 
 def p_JOIN_NT(p):
-    '''JOIN_NT : VALID_JOINS'''
+    '''JOIN_NT : VALID_JOINS
+                | '''
 
 def p_VALID_JOINS(p):
     '''VALID_JOINS : VALID_JOIN
@@ -227,21 +208,24 @@ def p_COMPARATION_OPERATOR(p):
                             | LESS_THAN_OR_EQUALS'''
 
 def p_WHERE_NT(p):
-    '''WHERE_NT : WHERE COMPARATIONS'''
+    '''WHERE_NT : WHERE COMPARATIONS
+                | '''
 
 def p_COMPARATIONS(p):
     '''COMPARATIONS : CONDITION
                     | CONDITION AND COMPARATIONS'''
 
 def p_GROUP_BY_NT(p):
-    '''GROUP_BY_NT : GROUP BY_NT'''
+    '''GROUP_BY_NT : GROUP BY_NT
+                    | '''
 
 def p_BY_NT(p):
     '''BY_NT : BY COLUMNS
           | BY COLUMNS HAVING FUNCTION COMPARATION_OPERATOR STRING'''
 
 def p_ORDER_BY_NT(p):
-    '''ORDER_BY_NT : ORDER BY_NT_WITHOUT_HAVING'''
+    '''ORDER_BY_NT : ORDER BY_NT_WITHOUT_HAVING
+                    | '''
 
 def p_BY_NT_WITHOUT_HAVING(p):
     '''BY_NT_WITHOUT_HAVING : BY COLUMNS DESC
