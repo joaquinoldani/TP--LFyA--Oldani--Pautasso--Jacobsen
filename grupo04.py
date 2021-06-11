@@ -236,13 +236,13 @@ def parse_select_statement(s):
     parser = yacc.yacc()
     parser.parse(s)
 
-    diccionary = {}
+    result = {}
 
     for table in tables:
-        diccionary[table.get('table_name')] = []
+        result[table.get('table_name')] = []
 
         for column in columns:
             if column.get('table_alias') == table.get('table_alias'):
-                diccionary[table.get('table_name')].append(column.get('column_name'))
-                diccionary[table.get('table_name')].sort()
-    return diccionary
+                result[table.get('table_name')].append(column.get('column_name'))
+                result[table.get('table_name')].sort()
+    return result
