@@ -22,6 +22,7 @@ reserved = {
     'GROUP': 'GROUP',
     'HAVING': 'HAVING',
     'INNER': 'INNER',
+    'IN': 'IN',
     'JOIN': 'JOIN',
     'LEFT': 'LEFT',
     'MAX': 'MAX',
@@ -195,7 +196,8 @@ def p_COMPARATION_OPERATOR(p):
 
 def p_WHERE_NT(p):
     '''WHERE_NT : WHERE COMPARATIONS
-                | '''
+                | WHERE COLUMN IN LEFT_PARENTHESIS QUERY RIGHT_PARENTHESIS
+                | '''
 
 def p_COMPARATIONS(p):
     '''COMPARATIONS : CONDITION
