@@ -153,8 +153,11 @@ def p_TABLES(p):
 
 def p_TABLE(p):
     '''TABLE : STRING STRING
-             | STRING AS STRING'''
+             | STRING AS STRING
+             | STRING'''
     table = None
+    if len(p) == 2:
+        table = { 'table_name' : p[1], 'table_alias' : p[1] }
     if len(p) == 4:
         table = { 'table_name' : p[1], 'table_alias' : p[3] }
     if len(p) == 3:
@@ -239,12 +242,16 @@ def parse_select_statement(s):
     parser.parse(s)
 
     result = {}
+    contador = 0
 
     for table in tables:
         result[table.get('table_name')] = []
 
         for column in columns:
             if column.get('table_alias') == table.get('table_alias'):
+                contador+=1
                 result[table.get('table_name')].append(column.get('column_name'))
                 result[table.get('table_name')].sort()
+    if len(columns) != contador:
+        raise Exception('Columna con alias no existente en FROM')
     return result
