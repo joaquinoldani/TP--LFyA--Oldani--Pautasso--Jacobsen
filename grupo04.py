@@ -1,5 +1,3 @@
-import sys
-
 try:
     import ply.lex as lex
     import ply.yacc as yacc        
@@ -7,8 +5,8 @@ except ImportError:
     raise ImportError('Please, add ply library to the root of the proyect or run pip install -r requirements.txt')
 
 # Initialization
-columns = {}
-tables = {}
+columns = []
+tables = []
 
 reserved = {
     'AND': 'AND',
@@ -97,23 +95,7 @@ def t_error(t):
     print("Lex error. Character '%s' is not valid" % t.value[0])
     t.lexer.skip(1)
 
-query = """SELECT c.first_name,
-	c.last_name
-	FROM customers AS c"""
-
-# Check if the tokens are valid.
 lexer = lex.lex()
-lexer.input(query)
-
-# For real use 
-# lexer.input(sys.argv[1:])
-
-## Print the tokens
-while True:
-    tok = lexer.token()
-    if not tok:
-        break 
-    print(tok)
 
 def p_QUERY_AXIOM(p):
     '''QUERY : SELECT_NT FROM_NT JOIN_NT WHERE_NT GROUP_BY_NT ORDER_BY_NT'''
@@ -137,19 +119,22 @@ def p_STRINGS(p):
                | STRING''' 
 
 def p_COLUMN(p):
-    '''COLUMN : STRING DOT STRING
+    '''COLUMN : COLUMN_WIHTOUT_ALIAS
               | STRING DOT STRING ALIAS
-              | FUNCTION ALIAS'''
-    print('COLUMNA ' + p[3])
+              | FUNCTION ALIAS
+              | FUNCTION'''
+    if len(p) == 4 or len(p) == 5:
+        column = { 'column_name' : p[3], 'table_alias' : p[1] }
+        if column is not None and column not in columns:
+            columns.append(column)
 
 def p_COLUMN_WIHTOUT_ALIAS(p):
-    '''COLUMN_WIHTOUT_ALIAS : STRING DOT STRING
-                            | STRING'''
+    '''COLUMN_WIHTOUT_ALIAS : STRING DOT STRING'''
     if len(p) == 4:
-        print('COLUMNA ' + p[3])
-    if len(p) == 2:
-        print('COLUMNA' + p[1])
-
+        column = { 'column_name' : p[3], 'table_alias' : p[1] }
+    if column is not None and column not in columns:
+        columns.append(column)
+    
 def p_FUNCTION(p):
     '''FUNCTION : VALID_FUNCTIONS LEFT_PARENTHESIS COLUMN_WIHTOUT_ALIAS RIGHT_PARENTHESIS'''
 
@@ -166,17 +151,15 @@ def p_TABLES(p):
               | TABLE COMMA TABLES'''
 
 def p_TABLE(p):
-    '''TABLE : STRING DOT STRING
-             | STRING DOT STRING ALIAS
-             | STRING DOT STRING STRING
-             | STRING STRING
-             | STRING ALIAS'''
+    '''TABLE : STRING STRING
+             | STRING AS STRING'''
+    table = None
+    if len(p) == 4:
+        table = { 'table_name' : p[1], 'table_alias' : p[3] }
     if len(p) == 3:
-        print('TABLA ' + p[1])
-    if len(p) == 5:
-        print('TABLA ' + p[3])
-    if len(p) == 2:
-        print('TABLA ' + p[1])
+        table = { 'table_name' : p[1], 'table_alias' : p[2] }
+    if table is not None and table not in tables:
+        tables.append(table)
 
 def p_JOIN_NT(p):
     '''JOIN_NT : VALID_JOINS
@@ -197,7 +180,10 @@ def p_CONDITIONS(p):
                   | CONTIDION CONDITIONS'''
 
 def p_CONDITION(p):
-    '''CONDITION : COLUMN_WIHTOUT_ALIAS COMPARATION_OPERATOR COLUMN_WIHTOUT_ALIAS'''
+    '''CONDITION : COLUMN_WIHTOUT_ALIAS COMPARATION_OPERATOR COLUMN_WIHTOUT_ALIAS
+                 | COLUMN_WIHTOUT_ALIAS COMPARATION_OPERATOR FUNCTION
+                 | COLUMN_WIHTOUT_ALIAS COMPARATION_OPERATOR QUOTE STRING QUOTE
+                 | COLUMN_WIHTOUT_ALIAS COMPARATION_OPERATOR NUMBER'''
 
 def p_COMPARATION_OPERATOR(p):
     '''COMPARATION_OPERATOR : EQUAL
@@ -221,7 +207,8 @@ def p_GROUP_BY_NT(p):
 
 def p_BY_NT(p):
     '''BY_NT : BY COLUMNS
-          | BY COLUMNS HAVING FUNCTION COMPARATION_OPERATOR STRING'''
+          | BY COLUMNS HAVING FUNCTION COMPARATION_OPERATOR STRING
+          | BY COLUMNS HAVING FUNCTION COMPARATION_OPERATOR NUMBER'''
 
 def p_ORDER_BY_NT(p):
     '''ORDER_BY_NT : ORDER BY_NT_WITHOUT_HAVING
@@ -238,10 +225,24 @@ def p_error(p):
     else:
         print("Syntax error at EOF")
 
-## Check if query has valid sintax.
-parser = yacc.yacc()
+def parse_select_statement(s):
+    columns.clear()
+    tables.clear()
+    
+    # Check if the tokens are valid.
+    lexer = lex.lex()
+    lexer.input(s)
+    
+    parser = yacc.yacc()
+    parser.parse(s)
 
-# parser.input(sys.argv[1:])
+    diccionary = {}
 
-parser.parse(query)
+    for table in tables:
+        diccionary[table.get('table_name')] = []
 
+        for column in columns:
+            if column.get('table_alias') == table.get('table_alias'):
+                diccionary[table.get('table_name')].append(column.get('column_name'))
+                diccionary[table.get('table_name')].sort()
+    return diccionary

@@ -2,3 +2,4 @@
 parser.out
 .vscode/launch.json
 ply
+parsetab.py
